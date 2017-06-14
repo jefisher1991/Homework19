@@ -34,20 +34,55 @@ db.once("open", function() {
 });
 
 
-// Routes
+// Routes- HELP
 // ======
 
-* `/api/saved` 
-// (get) - your components will use this to query MongoDB for all saved articles
+// your components will use this to query MongoDB for all saved articles
+app.get("/saved", function(req, res) {
+  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
+    if (err) {
+      throw err;
+    }
+    res.redirect("/");
+  });
+});
 
- * `/api/saved` 
- // (post) - your components will use this to save an article to the database
 
- * `/api/saved` 
- // (delete) - your components will use this to delete a saved article in the database
+// your components will use this to save an article to the database
+app.post("/saved", function(req, res) {
+  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
+    if (err) {
+      throw err;
+    }
+    res.redirect("/");
+  });
+});
 
- * `*` 
- // (get) - will load your single HTML page (with ReactJS) in public/index.html. Make sure you put this after all other GET routes
+
+
+// your components will use this to delete a saved article in the database
+app.delete("/api/saved", function(req, res) {
+  connection.query("DELETE FROM newsScrubber WHERE id = ?", [req.params.id], function(err, result) {
+    if (err) {
+      throw err;
+    }
+    res.redirect("/");
+  });
+});
+ 
+
+ // (get) - will load your single HTML page (with ReactJS) in public/index.html. 
+ app.get("/", function(req, res) {
+  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
+    if (err) {
+      throw err;
+    }
+    res.redirect("/");
+  });
+});
+
+
+
 
 // Listen on port 3000
 app.listen(3000, function() {
