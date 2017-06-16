@@ -4,10 +4,13 @@ var bodyParser = require("body-parser");
 var logger = require("morgan");
 var app = express();
 
+var PORT = process.env.PORT || 3000;
+
 var mongoose = require("mongoose");
 mongoose.Promise = Promise;
 
-var Example = require("./model.js");
+
+var Article = require("./models/article.js");
 
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({
@@ -37,54 +40,64 @@ db.once("open", function() {
 // Routes- HELP
 // ======
 
-// your components will use this to query MongoDB for all saved articles
-app.get("/saved", function(req, res) {
-  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
-    if (err) {
-      throw err;
-    }
-    res.redirect("/");
-  });
-});
-
-
-// your components will use this to save an article to the database
-app.post("/saved", function(req, res) {
-  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
-    if (err) {
-      throw err;
-    }
-    res.redirect("/");
-  });
-});
-
-
-
-// your components will use this to delete a saved article in the database
-app.delete("/api/saved", function(req, res) {
-  connection.query("DELETE FROM newsScrubber WHERE id = ?", [req.params.id], function(err, result) {
-    if (err) {
-      throw err;
-    }
-    res.redirect("/");
-  });
-});
- 
-
  // (get) - will load your single HTML page (with ReactJS) in public/index.html. 
  app.get("/", function(req, res) {
-  connection.query("DELETE FROM quotes WHERE id = ?", [req.params.id], function(err, result) {
-    if (err) {
-      throw err;
-    }
-    res.redirect("/");
-  });
+  res.sendFile("./public/index.html"); 
+
 });
+
+ app.get('/api/saved', function(req, res) {
+
+  Article.find({})
+    .exec(function(err, response){
+
+      if(err){
+        console.log(err);
+      }
+      else {
+        res.send(response);
+      }
+    })
+});
+
+
+
+app.post('/api/saved', function(req, res){
+
+  var myArticle = new Article({
+    title: req.body.title,
+    date: req.body.date,
+    url: req.body.url
+  });
+
+  myArticle.save(function(err, response){
+    if(err){
+      res.send(err);
+    } else {
+      res.json(response);
+    }
+  });
+
+});
+
+
+app.delete('/api/saved/:id', function(req, res){
+
+  Article.find({'_id': req.params.id}).remove()
+    .exec(function(err, response) {
+      res.send(response);
+  });
+
+});
+
+ 
+
+
 
 
 
 
 // Listen on port 3000
-app.listen(3000, function() {
-  console.log("App running on port 3000!");
+app.listen(PORT, function() {
+  console.log("App running on port!");
 });

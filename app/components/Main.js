@@ -1,9 +1,12 @@
 
+var axios = require("axios"); 
 var React = require("react"); 
-var main2 = require("./panels/main2"); 
-var saved = require("./panels/saved"); 
-var search = require("./panels/search"); 
 
+var Form = require("./panels/form"); 
+var Results = require("./panels/results"); 
+var Saved = require("./panels/saved"); 
+
+var helpers = require("./data.js");
 
 // Import all of the sub components here
 
@@ -11,9 +14,96 @@ var search = require("./panels/search");
 // Whenever you click the button it will communicate the click event to all other sub components.
 var Main = React.createClass({
 
+	getInitialState: function(){
+		return {
+			topic: "",
+			startYear: "",
+			endYear: "",
+			results: [],
+			articles: []
+		}
+	},	
+	setTerm: function(topic, startYear, endYear){
+		this.setState({
+			topic: topic, startYear: startYear, endYear:endYear
+		})
+
+	}, 
+
+	updateComponent: function(previousProperty, previousState){
+		if (previousState.topic !== this.state.topic) {
+			helpers.query(this.state.topic, this.state.startYear, this.state.endYear).then(function(response){
+				if (response !== this.state.results){
+					this.setState({
+						results:response  
+					})
+				}
+			}.bind(this))
+		}
+	},
+	mountComponent: function(){
+		axios.get('/api/saved')
+			.then(function(response){
+				this.setState({
+					articles: response.data
+				});
+			}.bind(this));
+	},
+
+	saveArticle: function(title, date, url){
+			helpers.saveArticle(title, date, url); 
+	},
+	deleteArticle: function(article){
+			axios.delete("/api/saved/" + article._id).then(function(response){
+				this.setState({
+					articles:response.data
+				})
+				return response; 
+			}.bind(this)); 		
+
+	},
+	getArticle: function(){
+		axios.get("/api/saved/").then(function(response){
+			this.setState({
+					articles: response.data
+			})
+			return response;
+		}.bind(this)); 
+	}, 
+	render: function(){
+
+		return (
+		<div className="container"> 
+			<div className="row">
+
+				<h1> New York Times Search App</h1>
+
+			</div>
+			<div className="row">
+				<Form setTerm={this.setTerm}/>
+
+			</div>
+			<div className="row">
+				<Results results={this.state.results} saveArticle={this.saveArticle}/>
+
+			</div>
+			<div className="row">
+				<Saved articles= {this.state.articles} deleteArticle= {this.deleteArticle}/>
+
+			</div>
+
+			}
+		</div>
 
 
-  
+		)
+	}
+
+
+
+ });
+
+module.exports = Main;
 
 //   // Here we set a generic state associated with the number of clicks
 //   getInitialState: function() {
@@ -91,4 +181,4 @@ var Main = React.createClass({
 // });
 
 // Export the component back for use in other files
-module.exports = Main;
+
